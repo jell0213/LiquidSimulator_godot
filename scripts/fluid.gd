@@ -73,7 +73,7 @@ func step(dt: float, center: Vector2, half_size: float, wall_velocity: Vector2) 
         var i := pairs[k].x
         var j := pairs[k].y
         var q := distances[k]
-        var pressure := maxf(-45.0, 540.0 * (density[i] + density[j] - 2.0 * REST_DENSITY))
+        var pressure := maxf(0.0, 540.0 * (density[i] + density[j] - 2.0 * REST_DENSITY))
         var near_pressure := 2400.0 * (near_density[i] + near_density[j])
         var displacement := directions[k] * (dt * dt * (pressure * q + near_pressure * q * q) * 0.5)
         positions[i] -= displacement
@@ -81,6 +81,19 @@ func step(dt: float, center: Vector2, half_size: float, wall_velocity: Vector2) 
     var lower := center - Vector2.ONE * (half_size - RADIUS)
     var upper := center + Vector2.ONE * (half_size - RADIUS)
     for i in positions.size():
+        # A hard clamp alone collapses particles onto identical wall coordinates.
+        # Such a 1D column has no lateral pressure direction and can support
+        # itself vertically forever. Mirror boundary support supplies the missing
+        # inward normal pressure from a virtual particle across each wall.
+        # This is repulsive only, with no tangential force or wall adhesion.
+        var boundary_correction := Vector2.ZERO
+        for axis in 2:
+            var wall_min := center[axis] - half_size
+            var wall_max := center[axis] + half_size
+            var left_q := clampf(1.0 - 2.0 * (positions[i][axis] - wall_min) / H, 0.0, 1.0)
+            var right_q := clampf(1.0 - 2.0 * (wall_max - positions[i][axis]) / H, 0.0, 1.0)
+            boundary_correction[axis] = 2400.0 * dt * dt * (left_q * left_q - right_q * right_q)
+        positions[i] += boundary_correction
         positions[i] = positions[i].clamp(lower, upper)
         velocities[i] = (positions[i] - previous[i]) / dt
     # XSPH velocity diffusion gives continuously adjustable viscosity.

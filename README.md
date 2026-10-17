@@ -45,6 +45,7 @@ godot --editor --path .
 - 空間雜湊搜尋鄰居，對稱雙密度鬆弛修正壓力。
 - XSPH 速度擴散控制黏滯程度。
 - 移動容器以相對壁面速度處理碰撞；粒子保留慣性，呈現晃動、堆積、波浪。
+- 牆面使用鏡像粒子的法向排斥壓力，避免碰撞後粒子重疊成直立水柱；邊界不施加黏附力或切向摩擦。液體壓力限制為非負，避免低密度區域產生非預期的拉力。
 - SubViewport 密度貼圖加上閾值著色器融合粒子，呈現連續水體。
 
 這是即時遊戲用的近似流體模型，並非工程 CFD。容器採平移、封閉四壁，不支援旋轉或溢出；黏稠度為藝術控制值而非 Pa·s。高速拖曳有速度上限以維持穩定；較慢電腦在大量粒子運算時可能降低模擬速度。
@@ -55,7 +56,10 @@ godot --editor --path .
 godot --headless --path . --editor --import
 godot --headless --path . --script tests/scene_test.gd
 godot --headless --path . --script tests/viscosity_test.gd
+godot --headless --path . --script tests/wall_release_test.gd
 godot --headless --path . -- --smoke-test
 ```
 
 黏度測試比較相同初始速度下的相對動能，確認高黏度確實抑制粒子間相對運動。整合測試以兩種黏稠度和持續移動的容器運行 720 次模擬步，確認粒子數、有限數值、容器邊界和實際運動。無視窗測試不代表已人工驗證畫面與滑鼠操作。
+
+牆面回歸測試會先重現左右內壁的直立粒子柱，確認它們在重力下回落；再以 486 個粒子連續晃動容器 2 秒、靜置 8 秒，檢查粒子數值、邊界與高處掛壁殘留。測試涵蓋黏度 0% 和 100%。
