@@ -26,6 +26,17 @@ godot --editor --path .
 - **Space** 或 Pause / Play：暫停／繼續。
 - **R** 或 Reset liquid：重設容器位置與液體，保留黏稠度設定。
 
+## 場景編輯
+
+物件已預先儲存在 `.tscn`，遊戲執行時不再用 `Node.new()`／`add_child()` 建立介面或液體顯示物件：
+
+- `main.tscn`：主場景、背景、液體 SubViewport／WaterSurface，以及 `Interface` 下的文字、滑桿與按鈕。
+- `scenes/container.tscn`：容器玻璃、四壁輪廓、反光與把手；主場景的 `Container` 節點決定起始位置。
+- `scenes/liquid_particles.tscn`：486 個預先放置的粒子實例，可直接查看與調整初始位置。
+- `scenes/particle.tscn`：共用的 Sprite2D 粒子外觀與漸層材質。
+
+編輯粒子場景後，程式會讀取實際 Sprite2D 的位置作為初始流體狀態；重設也會恢復這些位置。求解器仍使用陣列計算壓力、黏度與碰撞，再同步到粒子節點，保留流體行為。容器物理邊界目前仍是半邊長 185 的正方形；單獨改變輪廓節點不會改變求解器邊界。整合測試預期標準配置為 486 粒子。
+
 ## 為什麼使用粒子流體
 
 液體沒有單一最適合的 Godot 內建「液體物件」。`RigidBody2D` 適合剛體，數百個碰撞圓球通常呈現砂粒或彈珠效果，因此本專案使用自訂的粒子流體求解器；`Node2D` 負責呈現，粒子位置、速度與鄰居資料由獨立求解器維護。
@@ -42,6 +53,7 @@ godot --editor --path .
 
 ```bash
 godot --headless --path . --editor --import
+godot --headless --path . --script tests/scene_test.gd
 godot --headless --path . --script tests/viscosity_test.gd
 godot --headless --path . -- --smoke-test
 ```

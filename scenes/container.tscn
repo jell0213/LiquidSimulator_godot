@@ -1,0 +1,29 @@
+[gd_scene format=3]
+
+[node name="Container" type="Node2D"]
+
+[node name="Glass" type="Polygon2D" parent="."]
+polygon = PackedVector2Array(-190, -190, 190, -190, 190, 190, -190, 190)
+color = Color(0.08, 0.16, 0.23, 0.3)
+
+[node name="Glow" type="Line2D" parent="."]
+points = PackedVector2Array(-193, -193, 193, -193, 193, 193, -193, 193)
+closed = true
+width = 8.0
+default_color = Color(0.27, 0.8, 0.92, 0.08)
+
+[node name="Walls" type="Line2D" parent="."]
+points = PackedVector2Array(-185, -185, 185, -185, 185, 185, -185, 185)
+closed = true
+width = 2.0
+default_color = Color(0.275, 0.4, 0.494, 1)
+
+[node name="Highlight" type="Line2D" parent="."]
+points = PackedVector2Array(-173, -181, -97, -181)
+width = 2.0
+default_color = Color(0.718, 0.871, 0.918, 1)
+
+[node name="Handle" type="Line2D" parent="."]
+points = PackedVector2Array(-12, -202, 12, -202)
+width = 4.0
+default_color = Color(0.5, 0.64, 0.71, 1)
